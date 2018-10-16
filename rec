@@ -1,0 +1,168 @@
+ // /*clean rfds*/
+                // FD_ZERO(&rfds);
+                // // /* set input*/
+                // // FD_SET(0, &rfds);
+                // // maxfd = 0;
+                // /*join this conn*/
+                // FD_SET(conn, &rfds);
+                // /*find the biggest*/
+                // //if(maxfd < conn)
+                // maxfd = conn;
+                // /*set time out value */
+                // tv.tv_sec = 5;
+                // tv.tv_usec = 0;
+                // /*wait*/
+                // retval = select(maxfd+1, &rfds, NULL, NULL, &tv);
+                // if(retval == -1)
+                // {
+                //     // printf("select error\n");
+                //     break;
+                // }
+                // else if(retval == 0)
+                // {
+                //     if(oldinfo==1)
+                //     {
+
+                //         string  oldgetinfo=Test(" cat /usr/linkpack.txt  /usr/a.txt  /usr/memtester.txt /usr/stream.txt /usr/randwrite_sd* /usr/randread_sd* /usr/write_sd* /usr/read_sd* ","c");
+                //         mytcp->TcpSend(oldgetinfo);
+
+                //     }
+                //     oldinfo=0;
+                //     // printf("server null， client null,waiting...\n");
+                //     continue;
+                // }
+                // else
+                // {
+                //     /*recv msg*/
+
+                //     if(FD_ISSET(conn,&rfds))
+                //     {
+                //         char buffer[1024];
+                //         memset(buffer, 0,sizeof(buffer));
+                //         int len = recv(conn, buffer, sizeof(buffer), 0);
+
+                //         if(strcmp(buffer, "reboot") == 0)
+                //         {
+                //             //reboot to load installer
+                //             Test("reboot","reboot");
+                //             break;
+                //         }
+                //         else if (strcmp(buffer, "test_start") == 0)
+                //         {
+                //             //test
+                //             mytcp=new TcpTool(getip);
+                //             string MachineInfo;
+                //             MachineInfo.append("hwinfo");
+                //             MachineInfo.append(":");
+                //             MachineInfo.append(TestBoard());
+                //             MachineInfo.append("#");
+                //             MachineInfo.append(TestCpu());
+                //             MachineInfo.append("#");
+                //             MachineInfo.append(TestMem());
+                //             MachineInfo.append("#");
+                //             MachineInfo.append(TestDisk());
+                //             MachineInfo.append("#");
+                //             MachineInfo.append(TestOth(NetBoardInfo,"NetBoardInfo:"));
+                //             MachineInfo.append("#");
+                //             MachineInfo.append(TestOth(Graphics,"Graphics:"));
+                //             mytcp->TcpSend(MachineInfo);
+
+                //         }
+                //         else if (strcmp(buffer, "test_restart") == 0)
+                //         {
+                //             //retest
+                //             mytcp=new TcpTool(getip);
+                //             string MachineInfo;
+                //             MachineInfo.append("hwinfo");
+                //             MachineInfo.append(":");
+                //             MachineInfo.append(TestBoard());
+                //             MachineInfo.append("#");
+                //             MachineInfo.append(TestCpu());
+                //             MachineInfo.append("#");
+                //             MachineInfo.append(TestMem());
+                //             MachineInfo.append("#");
+                //             MachineInfo.append(TestDisk());
+                //             MachineInfo.append("#");
+                //             MachineInfo.append(TestOth(NetBoardInfo,"NetBoardInfo:"));
+                //             MachineInfo.append("#");
+                //             MachineInfo.append(TestOth(Graphics,"Graphics:"));
+                //             mytcp->TcpSend(MachineInfo);
+                //         }
+                //         else if (strcmp(buffer, "old_start") == 0)
+                //         {
+                //             mytcp=new TcpTool(getip);
+                //             //all test result > to .txt   at last  get that to send
+                //             //1  mem test      expect got
+                //             string mem=Test(MemSize,x);
+                //             mem.erase(mem.length()-3,3);
+                //             int memsize = atoi(mem.c_str());
+                //             string memtester="";
+                //             memtester.append("./memtester ");
+                //             memtester.append(mem);
+                //             memtester.append(" 10  | grep -v got> /usr/memtester.txt");
+                //             Test(memtester,"memtester");
+                //             string memstream="./stream > /usr/stream.txt";
+                //             Test(memstream,"memstream");
+                //             //2  fio test
+                //             //pre test cmd
+                //             // 1) randwrite
+                //             string randwrite1="./fio -filename=/dev/sd";
+                //             string randwrite2=" -direct=1 -thread -rw=randwrite -ioengine=libaio -bs=1M -size=100G -numjobs=1 -iodepth=32 -runtime=120 -time_based -name=stresssda";
+                //             // 2) write
+                //             string write1="./fio -filename=/dev/sd";
+                //             string write2=" -direct=1 -thread -rw=write -ioengine=libaio -bs=1M -size=100G -numjobs=1 -iodepth=32 -runtime=120 -time_based -name=stresssda";
+                //             // 3) randread
+                //             string randread1="./fio -filename=/dev/sd";
+                //             string randread2=" -direct=1 -thread -rw=randread -ioengine=libaio -bs=1M -size=100G -numjobs=1 -iodepth=32 -runtime=120 -time_based -name=stresssda";
+                //             // 4) read
+                //             string read1="./fio -filename=/dev/sd";
+                //             string read2=" -direct=1 -thread -rw=read -ioengine=libaio -bs=1M -size=100G -numjobs=1 -iodepth=32 -runtime=120 -time_based -name=stresssda";
+                //             //check disk num
+                //             co = atoi(Test(DiskNum,x).c_str());
+                //             // count DiskNum & test disk
+                //             for(int i=0; i<co; i++)
+                //             {
+                //                 string ss=("a"+i);
+                //                 //build randwritesdx.txt
+                //                 string randwrite = randwrite1;
+                //                 randwrite.append(ss+randwrite2+" > /usr/randwrite_sd"+ss+".txt");
+
+                //                 string write = write1;
+                //                 write.append(ss+write2+" > /usr/write_sd"+ss+".txt");
+
+                //                 string randread = randread1;
+                //                 randread.append(ss+randread2+" > /usr/randread_sd"+ss+".txt");
+
+                //                 string read = read1;
+                //                 read.append(ss+read2+" > /usr/read_sd"+ss+".txt");
+
+                //                 Test(randwrite,"randwrite");
+                //                 Test(write,"write");
+                //                 Test(randread,"randread");
+                //                 Test(read,"read");
+
+                //                 // loop to test disk
+                //             }
+
+                //             //3 CPU test      1) Linkpack 2)HPL
+                //             // 1) Linkpack
+                //             string linkpack="./runme_xeon64 > /usr/linkpack.txt";
+                //             Test(linkpack,"123");
+                //             // 2) HPL    1.get used%    2. get HPL.out
+
+                //             //just run start burn
+                //             Test("nice -n 19 ./start","123");
+                //             //4 get all data  to send
+                //             /// just cat *.txt with rule
+
+                //         }
+                //         else if (strcmp(buffer, "killoldtest") == 0)
+                //         {
+
+                //             Test("killall xhpl start-burn start","123");
+                //             continue;
+                //             //killall
+
+                //         }
+                //     }
+                // }

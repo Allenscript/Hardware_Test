@@ -1,0 +1,802 @@
+/**
+ * @file    main.cpp
+ * @brief   Brief description
+ * @author  yyc
+ * @version 1.0
+ * @date    2018.7.24
+ * @bug     It has not been implemented yet
+ * @warning No
+ */
+#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <cstdlib>
+#include <string>
+#include <cstdio>
+#include <typeinfo>
+#include <cstring>
+#include <unistd.h>
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/shm.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+
+
+#include<algorithm>
+#include<fcntl.h>
+#include<vector>
+#include<stdarg.h>
+
+#define varName(x) #x
+#define BUFLEN 1024
+#include <time.h>
+#include <string.h>
+
+#define MCAST_PORT 8888
+#define MCAST_ADDR "224.0.0.100"     /*一个局部连接多播地址，路由器不进行转发*/
+#define MCAST_INTERVAL 5             /*发送间隔时间*/
+
+#define BUFF_SIZE 256                /*接收缓冲区大小*/
+//#include "Thread.h"
+using namespace std;
+string getip;
+string x;
+int isIP(char str[]);
+
+/**
+
+ * String分割函数
+
+ */
+/**
+  * 独立函数
+  * @param S 等待处理的字符串
+  * @param V 存储结果的容器
+  * @param C 分割标识符
+  * @see SplitString(const string& s, vector<string>&    v, const string& c);
+  * @return void
+  */
+void SplitString(const string& s, vector<string>&    v, const string& c);
+/**
+
+ * String去首尾空格
+
+ */
+/**
+  * 独立函数
+  * @param S 等待处理的字符串
+  * @return void
+  */
+void trim(string &s);
+
+/**
+
+ * get serverip
+
+ */
+/**
+  * net function
+  * @param no
+  * @return char *  serverip
+  */
+
+char * WaitServer();
+
+
+/**
+
+ * 测试主板
+
+ */
+/**
+  * 独立函数
+  * @return msg 主板信息
+  */
+string TestBoard();
+
+/**
+
+ * 测试CPU
+
+ */
+/**
+  * 独立函数
+  * @return msg CPU 信息
+  */
+string TestCpu();
+/**
+
+ * 测试内存
+
+ */
+/**
+  * 独立函数
+  * @return msg 内存 信息
+  */
+string TestMem();
+/**
+
+ * 测试硬盘
+
+ */
+/**
+  * 独立函数
+  * @return msg 硬盘 信息
+  */
+string TestDisk();
+/**
+
+ * 测试硬盘
+
+ */
+/**
+  * 独立函数
+  * @param string l 操作符
+  * @return msg 硬盘 信息
+  */
+string TestOth(string l,string x);
+//string BoardName,BiosV,CpuInfo,CpuNum,MemInfo,MemSize,MemFrequen,DiskNum,DiskInfo,DiskV,NetBoardInfo;
+string BoardName="dmidecode | grep \"Product Name\"";
+///	Product Name: To Be Filled By O.E.M.
+/// Product Name: Z97 Pro3                 √
+///  获取第二条目的key
+string BiosV="dmidecode -s bios-version";
+//  P1.20
+//  直接获取
+string CpuInfo="cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c";
+//   cat /proc/cpuinfo | grep "cpu cores"
+//     8            Intel(R) Xeon(R) CPU E3-1230 v3       @ 3.30GHz
+//     获取 线程数   cpu 型号    主频
+string CpuCoreNum="cat /proc/cpuinfo  |grep \"cpu cores\" | uniq -c | cut -f2 -d:";
+//  获取物理核心数     4
+string CpuNum="cat /proc/cpuinfo | grep \"physical id\" |sort|uniq|wc -l";
+//      1
+string MemInfo="dmidecode | grep \"Manufacturer\"";
+//	Manufacturer: To Be Filled By O.E.M.
+//	Manufacturer: ASRock     //主板产商
+//	Manufacturer: To Be Filled By O.E.M.
+//	Manufacturer: Intel      //cpu产商
+//	Manufacturer: Transcend  //内存产商
+//	Manufacturer: [Empty]
+//	Manufacturer: [Empty]
+//	Manufacturer: [Empty]
+string MemSize="dmidecode|grep -A5 \"Memory Device\"|grep Size|grep -v Range";
+//	Size: 4096 MB
+//	Size: No Module Installed
+//	Size: No Module Installed
+//	Size: No Module Installed
+string MemFrequen="dmidecode |grep \"Configured Clock Speed\"";
+//	Configured Clock Speed: 1600 MT/s
+//	Configured Clock Speed: Unknown
+//	Configured Clock Speed: Unknown
+//	Configured Clock Speed: Unknown
+string DiskNum="lsblk -o TYPE | grep -i disk|wc -l";
+//先进行 Disk DiskNum 的检查，
+//  1
+string DiskInfo="cat /proc/scsi/scsi | grep \"Model\" ";
+//  Attached devices:                                    √
+//  Host: scsi0 Channel: 00 Id: 00 Lun: 00
+//      Vendor: ATA      Model: WDC WD10EURX-73C Rev: 1A01
+//      Type:   Direct-Access                    ANSI  SCSI revision: 05
+string DiskV="smartctl -a /dev/sda | more|grep \"Firmware Version\"";
+//  Firmware Version: 01.01A01
+string NetBoardInfo="lspci | grep Ethernet";
+//    00:19.0 Ethernet controller: Intel Corporation Ethernet Connection (2) I218-V
+string Graphics="lspci -vnn | grep VGA -A 1 ";
+
+
+const int N = 300;
+
+string opreation[]= {"cat /proc/scsi/scsi | grep \"Model\" ","","",""};
+
+//先操作拿到数据再进入数据处理函数
+//! A pure virtual member.
+
+/*!
+
+  获取配置数值的基本函数
+
+  string x 表示操作符
+
+*/
+string Test(string x,string res)
+{
+
+    char line[N];
+    FILE *fp;
+    int ln=0;
+    int memnum;
+    // 系统调用
+    const char *sysCommand = x.data();
+    if ((fp = popen(sysCommand, "r")) == NULL)
+    {
+        cout << "error" << endl;
+        //return ;
+    }
+    while (fgets(line, sizeof(line)-1, fp) != NULL)
+    {
+//string BoardName,BiosV,CpuInfo,CpuNum,MemInfo,MemSize,MemFrequen,DiskNum,DiskInfo,DiskV,NetBoardInfo;
+        if(x==BoardName)
+        {
+            if(ln==0)
+            {
+
+            }
+            else
+            {
+                string li=line;
+                trim(li);
+                string b=":";
+                string::size_type idx;
+                idx=li.find(b);
+                if(idx == string::npos )//不存在。
+                {
+                    res.append(li);
+                    res.append("  ");
+                }
+                else//存在。
+                {
+                    vector<string> v ;
+                    SplitString(li,v,":");
+                    trim(v[1]);
+                    res.append(v[1]);
+                }
+
+            }
+
+            ln++;
+        }
+        else if(x==DiskInfo)
+        {
+            string li=line;
+            string b=":";
+            string::size_type idx;
+            idx=li.find(b);
+            if(idx == string::npos )// 。
+            {
+            }
+            else//存在。
+            {
+                vector<string> v ;
+                SplitString(li,v,":");
+                string li=v[2];
+                trim(li);
+                string b="R";
+                string::size_type idx;
+                idx=li.find(b);
+                if(idx == string::npos )//不存在。
+                {
+
+                }
+                else
+                {
+                    SplitString(li,v,"Rev");
+                    res.append(v[4]);
+                }
+            }
+        }
+        else if(x==MemInfo)
+        {
+
+            string li=line;
+            string b=":";
+            string::size_type idx;
+            idx=li.find(b);
+            if(idx == string::npos )//不存在。
+            {
+            }
+            else//存在。
+            {
+                vector<string> v ;
+                SplitString(li,v,":");
+                string li=v[1];
+                trim(li);
+                string b="To Be Filled";
+                string::size_type idx;
+                idx=li.find(b);
+                if(idx == string::npos )//不存在。
+                {
+                    string b="[Empty]";
+                    string::size_type idx;
+                    idx=li.find(b);
+                    if(idx == string::npos )//不存在。
+                    {
+                        res.append(li);
+                    }
+                    else
+                    {
+                    }
+                }
+                else
+                {}
+        }
+
+    }
+    else if(x==MemSize)
+    {
+        memnum++;
+        string li=line;
+        string b=":";
+        string::size_type idx;
+        idx=li.find(b);
+            if(idx == string::npos )//不存在。
+            {}
+            else//存在。
+            {
+                vector<string> v ;
+                SplitString(li,v,":");
+                string li=v[1];
+                trim(li);
+                string b="No Module";
+                string::size_type idx;
+                idx=li.find(b);
+                if(idx == string::npos )//不存在。
+                {
+                    res.append(li);
+                }
+                else
+                {
+
+                }
+            }
+        }
+        else if(x==MemFrequen)
+        {
+
+            string li=line;
+            string b=":";
+            string::size_type idx;
+            idx=li.find(b);
+            if(idx == string::npos )        //不存在。
+            {}
+            else//存在。
+            {
+                vector<string> v ;
+                SplitString(li,v,":");
+                string li=v[1];
+                trim(li);
+                string b="Unknown";
+                string::size_type idx;
+                idx=li.find(b);
+                if(idx == string::npos )//不存在。
+                {
+                    res.append(li);
+                }
+                else
+                {
+
+                }
+            }
+        }
+        else if(x==DiskV)
+        {
+
+            string li=line;
+            trim(li);
+            string b=":";
+            string::size_type idx;
+            idx=li.find(b);
+            if(idx == string::npos )//不存在。
+            {}
+            else //存在。
+            {
+                vector<string> v ;
+                SplitString(li,v,":");
+                string li=v[1];
+                trim(li);
+                string b="XX";
+                string::size_type idx;
+                idx=li.find(b);
+                if(idx == string::npos )//不存在。
+                {
+                    res.append(li);
+                }
+                else {}
+            }
+    }
+    else if(x==Graphics)
+    {
+        string li=line;
+        string b="Subsystem:";
+        string::size_type idx;
+        idx=li.find(b);
+            if(idx == string::npos )//不存在。
+            {}
+            else//存在。
+            {
+                vector<string> v ;
+                SplitString(li,v,"Subsystem:");
+                string li=v[1];
+                trim(li);
+                res.append(li);
+
+            }
+        }
+        else if(x==NetBoardInfo)
+        {
+            string li=line;
+            string b="controller:";
+            string::size_type idx;
+            idx=li.find(b);
+            if(idx == string::npos )//does not exist
+            {}
+            else//exist
+            {
+                vector<string> v ;
+                SplitString(li,v,"controller:");
+                string li=v[1];
+                trim(li);
+                res.append(li);
+            }
+        }
+        else
+        {
+            string ll=line;
+            trim(ll);
+            res.append(ll);
+        }
+
+    }
+    pclose(fp);
+
+    return res;
+}
+
+int main()
+{
+
+char * ipaaa=WaitServer();
+
+
+
+
+
+
+
+
+
+//cout<<ipaaa;
+  // char * serverip=WaitServer();
+  // cout<<serverip;
+
+//        if (n < 0)
+//        {
+//            printf ("recvfrom err in udptalk!\n");
+//           // continue;
+//        }
+//        else
+//        {
+//            /* 成功接收到数据报 */
+//            recmsg[n] = 0;
+//            if(strstr(recmsg,"tes"))
+//            {
+//                cout<<"test!!!!";
+//                ms.append(TestBoard());
+//                ms.append(TestCpu());
+//                // const char *  recmsg=ms.c_str();
+//                strncpy(recmsg,ms.c_str(),strlen(ms.c_str()));
+//                if (sendto(sockfd, recmsg, strlen (recmsg), 0, (struct sockaddr *) &peeraddr, sizeof (struct sockaddr_in)) < 0)
+//                {
+//                    printf ("sendto error!\n");
+//                    //continue;
+//                }else{
+//               // continue;
+//                }
+////    cout<<TestMem();
+////    cout<<TestDisk();
+////    cout<<TestOth(NetBoardInfo,"NetBoardInfo:");
+////    cout<<TestOth(Graphics,"Graphics:");
+//
+//            }
+//
+//        }
+
+
+ return 0;
+}
+
+string TestBoard()
+{
+    string msg;
+    msg.append("BoardName:");
+    msg.append(Test(BoardName,x));
+    msg.append("&");
+    msg.append("BisoVersion:");
+    msg.append(Test(BiosV,x));
+    return msg;
+}
+string TestCpu()
+{
+    string msg;
+    msg.append("CpuNum:");
+    msg.append(Test(CpuNum,x));
+    msg.append("CpuCore:");
+    msg.append(Test(CpuCoreNum,x));
+    msg.append("CpuInfo:");
+    msg.append(Test(CpuInfo,x));
+    return msg;
+}
+string TestMem()
+{
+    string msg;
+    msg.append("MemInfo:");
+    msg.append(Test(MemInfo,x));
+    msg.append("MemSize:");
+    msg.append(Test(MemSize,x));
+    msg.append("MemFreq:");
+    msg.append(Test(MemFrequen,x));
+    return msg;
+}
+string TestDisk()
+{
+    string msg;
+    msg.append("DiskInfo:");
+    msg.append(Test(DiskInfo,x));
+    // 显示n行
+    msg.append("DiskNum:");
+    msg.append(Test(DiskNum,x));
+    int co = atoi(Test(DiskNum,x).c_str());
+    // count DiskNum
+    msg.append("DiskVer:");
+    for(int i=0; i<co; i++)
+    {
+        string s="smartctl -a /dev/sd";
+        string ss=("a"+i);
+        s.append(ss);
+        s.append("| more|grep \"Firmware Version\"");
+        string fv=Test(s,x);
+        vector<string> v ;
+        SplitString(fv,v,":");
+        msg.append(v[1]);
+    }
+
+
+    return msg;
+}
+string TestOth(string l,string x)
+{
+    string msg;
+    msg.append(Test(l,x));
+    return msg;
+}
+
+
+void SplitString(const string& s, vector<string>&    v, const string& c)
+{
+    std::string::size_type pos1, pos2;
+    pos2 = s.find(c);
+    pos1 = 0;
+    while(std::string::npos != pos2)
+    {
+        v.push_back(s.substr(pos1, pos2-pos1));
+        pos1 = pos2 + c.size();
+        pos2 = s.find(c, pos1);
+    }
+    if(pos1 != s.length())
+        v.push_back(s.substr(pos1));
+}
+void trim(string &s)
+{
+
+    if( !s.empty() )
+    {
+        s.erase(0,s.find_first_not_of(" "));
+        s.erase(s.find_last_not_of(" ") + 1);
+    }
+
+}
+char * WaitServer()
+{
+
+    struct sockaddr_in local_addr;              /*本地地址*/
+
+    int fd = socket(AF_INET, SOCK_DGRAM, 0);     /*建立套接字*/
+    if (fd == -1)
+    {
+        perror("socket()");
+        exit(1);
+    }
+
+    int yes = 1;
+    if (setsockopt(fd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(yes)) < 0)
+    {
+        perror("Reusing ADDR failed");
+        exit(1);
+    }
+
+    /*初始化本地地址*/
+    memset(&local_addr, 0, sizeof(local_addr));
+    local_addr.sin_family = AF_INET;
+    local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    local_addr.sin_port = htons(MCAST_PORT);
+
+    /*绑定socket*/
+    int err = bind(fd,(struct sockaddr*)&local_addr, sizeof(local_addr)) ;
+    if(err < 0)
+    {
+        perror("bind()");
+        exit(1);
+    }
+
+    /*设置回环许可*/
+    int loop = 1;
+    err = setsockopt(fd,IPPROTO_IP, IP_MULTICAST_LOOP,&loop, sizeof(loop));
+    if(err < 0)
+    {
+        perror("setsockopt():IP_MULTICAST_LOOP");
+        exit(1);
+    }
+
+    /*加入多播组*/
+    struct ip_mreq mreq;
+    mreq.imr_multiaddr.s_addr = inet_addr(MCAST_ADDR); /*多播地址*/
+    mreq.imr_interface.s_addr = htonl(INADDR_ANY); /*本地网络接口为默认*/
+
+    /*将本机加入多播组*/
+    err = setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP,&mreq, sizeof(mreq));
+    if (err < 0)
+    {
+        perror("setsockopt():IP_ADD_MEMBERSHIP");
+        exit(1);
+    }
+
+    int times = 0;
+    socklen_t addr_len = sizeof(local_addr);
+    char buff[BUFF_SIZE];
+    int n = 0;
+
+    /*循环接收多播组的消息，5次后退出*/
+    for(times = 0;times < 5;times++)
+    {
+        memset(buff, 0, BUFF_SIZE);                 /*清空接收缓冲区*/
+
+        /*接收数据*/
+        n = recvfrom(fd, buff, BUFF_SIZE, 0,(struct sockaddr*)&local_addr,&addr_len);
+        if( n== -1)
+        {
+            perror("recvfrom()");
+        }
+                                                    /*打印信息*/
+char str[256] = "";
+//str=buff;
+strcpy(str,buff);
+  char str2[] = "0000000";
+  char str3[] = "11.1.1.1.d";
+
+  printf("%d\n",isIP(str));
+  printf("%d\n",isIP(str2));
+  printf("%d\n",isIP(str3));
+
+
+        if(isIP(str))
+        {
+            cout<<"yes";
+            break;
+        }
+        printf("Recv %dst message from server:%s\n", times, buff);
+        sleep(MCAST_INTERVAL);
+    }
+
+    /*退出多播组*/
+    err = setsockopt(fd, IPPROTO_IP, IP_DROP_MEMBERSHIP,&mreq, sizeof(mreq));
+
+    close(fd);
+
+    //  struct sockaddr_in local_addr;              /*本地地址*/
+
+    // int fd = socket(AF_INET, SOCK_DGRAM, 0);     /*建立套接字*/
+    // if (fd == -1)
+    // {
+    //     perror("socket()");
+    //     exit(1);
+    // }
+
+    // int yes = 1;
+    // if (setsockopt(fd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(yes)) < 0)
+    // {
+    //     perror("Reusing ADDR failed");
+    //     exit(1);
+    // }
+
+    // /*初始化本地地址*/
+    // memset(&local_addr, 0, sizeof(local_addr));
+    // local_addr.sin_family = AF_INET;
+    // local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    // local_addr.sin_port = htons(MCAST_PORT);
+
+    // /*绑定socket*/
+    // int err = bind(fd,(struct sockaddr*)&local_addr, sizeof(local_addr)) ;
+    // if(err < 0)
+    // {
+    //     perror("bind()");
+    //     exit(1);
+    // }
+
+    // /*设置回环许可*/
+    // int loop = 1;
+    // err = setsockopt(fd,IPPROTO_IP, IP_MULTICAST_LOOP,&loop, sizeof(loop));
+    // if(err < 0)
+    // {
+    //     perror("setsockopt():IP_MULTICAST_LOOP");
+    //     exit(1);
+    // }
+
+    // /*加入多播组*/
+    // struct ip_mreq mreq;
+    // mreq.imr_multiaddr.s_addr = inet_addr(MCAST_ADDR); /*多播地址*/
+    // mreq.imr_interface.s_addr = htonl(INADDR_ANY); /*本地网络接口为默认*/
+
+    // /*将本机加入多播组*/
+    // err = setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP,&mreq, sizeof(mreq));
+    // if (err < 0)
+    // {
+    //     perror("setsockopt():IP_ADD_MEMBERSHIP");
+    //     exit(1);
+    // }
+
+    // int times = 0;
+    // socklen_t addr_len = sizeof(local_addr);
+    // char buff[BUFF_SIZE];
+    // int n = 0;
+
+    // /*循环接收多播组的消息，5次后退出*/
+    // for(times = 0;;)
+    // {
+    //     memset(buff, 0, BUFF_SIZE);                 /*清空接收缓冲区*/
+
+    //     /*接收数据*/
+    //     n = recvfrom(fd, buff, BUFF_SIZE, 0,(struct sockaddr*)&local_addr,&addr_len);
+    //     if( n== -1)
+    //     {
+    //         perror("recvfrom()");
+    //     }
+
+
+    //                                                 /*打印信息*/
+
+
+
+
+    //     char str[256];
+    //     int f=4;
+    //     //str = buff;
+    //     strncpy(str,buff,strlen(buff));
+    //     if(isip(rtrim(str), &f))
+    //     {
+
+
+    //         break;
+    //     }
+
+    //    // printf("Recv %dst message from server:%s\n", times, buff);
+    //     sleep(MCAST_INTERVAL);
+    // }
+
+    // /*退出多播组*/
+    // err = setsockopt(fd, IPPROTO_IP, IP_DROP_MEMBERSHIP,&mreq, sizeof(mreq));
+
+    // close(fd);
+return buff;
+
+}
+
+int isIP(char str[])
+{
+    int a,b,c,d;
+    char temp[100];
+    if((sscanf(str,"%d.%d.%d.%d",&a,&b,&c,&d))!=4)
+        return 0;
+    sprintf(temp,"%d.%d.%d.%d",a,b,c,d);
+    if(strcmp(temp,str) != 0)
+        return 0;
+    if(!((a <= 255 && a >= 0)&&(b <= 255 && b >= 0)&&(c <= 255 && c >= 0)))
+        return 0;
+    else
+        return 1;
+
+
+}

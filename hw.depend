@@ -1,0 +1,38 @@
+# depslib dependency file v1.0
+1535099895 source:/home/yyc/cpp/hw/main.cpp
+	<iostream>
+	<stdio.h>
+	<stdlib.h>
+	<cstdlib>
+	<string>
+	<cstdio>
+	<typeinfo>
+	<cstring>
+	<unistd.h>
+	<string.h>
+	<sys/types.h>
+	<sys/socket.h>
+	<sys/shm.h>
+	<netinet/in.h>
+	<arpa/inet.h>
+	<sys/ioctl.h>
+	<net/if.h>
+	<sys/time.h>
+	<signal.h>
+	<algorithm>
+	<fcntl.h>
+	<vector>
+	<stdarg.h>
+	<time.h>
+
+1532598736 source:/home/yyc/cpp/duobo/sender.cpp
+	<sys/types.h>
+	<sys/socket.h>
+	<arpa/inet.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<netdb.h>
+	<errno.h>
+	<iostream>
+

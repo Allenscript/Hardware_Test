@@ -1,0 +1,84 @@
+
+
+//string BoardName,BiosV,CpuInfo,CpuNum,MemInfo,MemSize,MemFrequen,DiskNum,DiskInfo,DiskV,NetBoardInfo;
+string BoardName="dmidecode | grep \"Product Name\"";
+///	Product Name: To Be Filled By O.E.M.
+/// Product Name: Z97 Pro3                 √
+///  获取第二条目的key
+string BiosV="dmidecode -s bios-version";
+//  P1.20
+//  直接获取
+string CpuInfo="cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c";
+//   cat /proc/cpuinfo | grep "cpu cores"
+//     8            Intel(R) Xeon(R) CPU E3-1230 v3       @ 3.30GHz
+//     获取 线程数   cpu 型号    主频
+string CpuCoreNum="cat /proc/cpuinfo  |grep \"cpu cores\" | uniq -c | cut -f2 -d:";
+//  获取物理核心数     4
+string CpuNum="cat /proc/cpuinfo | grep \"physical id\" |sort|uniq|wc -l";
+//      1
+string MemInfo="dmidecode | grep \"Manufacturer\"";
+//	Manufacturer: To Be Filled By O.E.M.
+//	Manufacturer: ASRock     //主板产商
+//	Manufacturer: To Be Filled By O.E.M.
+//	Manufacturer: Intel      //cpu产商
+//	Manufacturer: Transcend  //内存产商
+//	Manufacturer: [Empty]
+//	Manufacturer: [Empty]
+//	Manufacturer: [Empty]
+string MemSize="dmidecode|grep -A5 \"Memory Device\"|grep Size|grep -v Range";
+//	Size: 4096 MB
+//	Size: No Module Installed
+//	Size: No Module Installed
+//	Size: No Module Installed
+string MemFrequen="dmidecode |grep \"Configured Clock Speed\"";
+//	Configured Clock Speed: 1600 MT/s
+//	Configured Clock Speed: Unknown
+//	Configured Clock Speed: Unknown
+//	Configured Clock Speed: Unknown
+string DiskNum="lsblk -o TYPE | grep -i disk|wc -l";
+//先进行 Disk DiskNum 的检查，
+//  1
+string DiskInfo="cat /proc/scsi/scsi | grep \"Model\" ";
+//  Attached devices:                                    √
+//  Host: scsi0 Channel: 00 Id: 00 Lun: 00
+//      Vendor: ATA      Model: WDC WD10EURX-73C Rev: 1A01
+//      Type:   Direct-Access                    ANSI  SCSI revision: 05
+string DiskV="smartctl -a /dev/sda | more|grep \"Firmware Version\"";
+//  Firmware Version: 01.01A01
+string NetBoardInfo="lspci | grep Ethernet";
+//    00:19.0 Ethernet controller: Intel Corporation Ethernet Connection (2) I218-V
+string Graphics="lspci -vnn | grep VGA -A 1 ";
+
+
+//          Product Name: To Be Filled By O.E.M.
+//	        主板：Product Name: Z97 Pro3                √
+
+//          Bios固件版本：   P1.20   else
+
+//          CPU 信息 (包括核心数 型号 主频)：8  Intel(R) Xeon(R) CPU E3-1230 v3 @ 3.30GHz
+
+//          CPU个数：1         else
+
+
+//	Manufacturer: To Be Filled By O.E.M.
+//	Manufacturer: ASRock
+//	Manufacturer: To Be Filled By O.E.M.
+//	Manufacturer: Intel
+//	Manufacturer: Transcend
+//	Manufacturer: [Empty]
+//	Manufacturer: [Empty]
+//	Manufacturer: [Empty]
+
+//	Size: 4096 MB
+//	Size: No Module Installed
+//	Size: No Module Installed
+//	Size: No Module Installed
+
+//  Vendor: ATA      Model: WDC WD10EURX-73C Rev: 1A01  √
+
+//         1     DiskNum
+
+//Firmware Version: 01.01A01
+
+//00:19.0 Ethernet controller: Intel Corporation Ethernet Connection (2) I218-V
+//

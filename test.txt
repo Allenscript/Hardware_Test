@@ -1,0 +1,7 @@
+test
+
+objdump -p ./hw | grep NEEDED
+
+g++ -static -Wall -fexceptions -O2  -c /home/yyc/cpp/hw/main.cpp -o obj/Release/main.o
+
+g++ -static -o bin/Release/hw obj/Release/main.o  -s  
