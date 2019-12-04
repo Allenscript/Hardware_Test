@@ -1,9 +1,9 @@
-## auto get hardware info  to Django 
+## auto get hardware info  tcpserver 
 
+this project could collect hardware info to tcpserver
 
-this project could collect hardware info to Django for people to check
+hardware info include cpu mem disk  board gpu netboard bios sn ...etc
 
-
-and then when check it pass , you can set the old-test with some machine  
+and that can run Machine aging test
 
 
